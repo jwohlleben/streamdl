@@ -1,5 +1,5 @@
 # streamdl
-A simple but feature-rich Python script for downloading M3U8 streams
+A simple but feature-rich Python script for downloading M3U8 streams.
 
 ## Prerequisites
 In order to use streamdl, please install
