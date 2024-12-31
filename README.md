@@ -4,8 +4,11 @@ A simple but feature-rich python script for downloading M3U8 streams.
 ## Prerequisites
 In order to use streamdl, please install
 - python3
-- m3u8 library (e.g. using pip)
-- requests library (e.g. using pip)
+- python3-pip
+- python3-venv
+
+## Setup
+In the streamdl folder run `./setup_venv.sh` to setup the virtual environment.
 
 ## Usage
 ```
@@ -39,13 +42,13 @@ optional arguments:
 
 ## Examples
 Download a stream:<br>
-`./streamdl.py "https://somewebsite.com/epicstream/stream.m3u8"`
+`./run.sh "https://somewebsite.com/epicstream/stream.m3u8"`
 
 Download a stream, wait 2.5 - 4.5 seconds between requests and save the stream as "myepicstream.ts":<br>
-`./streamdl.py -s 2.5-4.5 -o "myepicstream.ts"`
+`./run.sh -s 2.5-4.5 -o "myepicstream.ts"`
 
 Download a stream and add a custom header:<br>
-`./streamdl.py -a "My-Header:Awesome" "https://somewebsite.com/epicstream/stream.m3u8"`
+`./run.sh -a "My-Header:Awesome" "https://somewebsite.com/epicstream/stream.m3u8"`
 
 ## Misc
 - You can edit the file `modules/headers.py` to use custom standard headers
