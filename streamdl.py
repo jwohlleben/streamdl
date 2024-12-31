@@ -4,6 +4,7 @@
 streamdl downloads streams from m3u8 files
 """
 
+import subprocess
 import requests
 import logging
 import random
@@ -87,8 +88,36 @@ def main_loop():
                 file.write(response.content)
                 bar()
 
-    logger.info('Done')
+    logger.info('Done downloading')
 
+    # Convert file, if requested
+    if args.convert_format != '':
+        logger.info('Converting file...')
+
+        if args.convert_format == 'mp3':
+            command = [
+                'ffmpeg',
+                '-i', args.output,
+                '-vn',
+                '-ar', '44100',
+                '-ac', '2',
+                '-b:a', '192k',
+                args.output + '.mp3'
+            ]
+        elif args.convert_format == 'mp4':
+            command = [
+                'ffmpeg',
+                '-i', args.output,
+                '-c:v', 'libx264',
+                '-c:a', 'aac',
+                args.output + '.mp4'
+            ]
+
+        try:
+            subprocess.run(command)
+            logger.info('Done converting')
+        except:
+            logger.error('Could not convert file. Is ffmpeg installed?')
 
 if __name__ == '__main__':
     try:

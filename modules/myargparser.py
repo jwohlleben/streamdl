@@ -35,6 +35,15 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    '-c',
+    '--convert',
+    choices=['mp3', 'mp4'],
+    help='converts the stream to a given format (mp3, mp4) using ffmpeg',
+    metavar='convert_format',
+    dest='convert_format',
+)
+
+parser.add_argument(
     '-a',
     '--add-header',
     action='append',
