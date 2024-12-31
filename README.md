@@ -7,6 +7,9 @@ In order to use streamdl, please install
 - python3-pip
 - python3-venv
 
+### Install using apt
+Run `sudo apt install python3 python3-pip python3-venv`
+
 ## Setup
 In the streamdl folder run `./setup_venv.sh` to setup the virtual environment.
 
@@ -53,5 +56,3 @@ Download a stream and add a custom header:<br>
 
 ## Misc
 - You can edit the file `modules/headers.py` to use custom standard headers
-- Use `ffmpeg -i inputfile.ts -vn -ar 44100 -ac 2 -b:a 192k outputfile.mp3` to convert the stream to mp3
-- Use `ffmpeg -i outputfile.ts -c:v libx264 -c:a aac outputfile.mp4` to convert the stream to mp4
