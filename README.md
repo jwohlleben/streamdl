@@ -12,32 +12,33 @@ In the streamdl folder run `./setup_venv.sh` to setup the virtual environment.
 
 ## Usage
 ```
-usage: streamdl.py [-h] [-b base_url] [-o outfile] [-a header:value]
-                   [-r header] [-s sec|minsec-maxsec] [-v] [--version]
+usage: streamdl.py [-h] [-b base_url] [-o outfile] [-c format] [-a header:value] [-r header]
+                   [-s sec|minsec-maxsec] [-v] [--version]
                    m3u8_stream
 
 positional arguments:
   m3u8_stream           url to a stream file, e.g.
                         https://somewebsite.com/epicstream/stream.m3u8
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -b base_url, --base-url base_url
                         overwrites the default URL for downloading, e.g.
                         https://somewebsite.com/epicstream/
   -o outfile, --output outfile
                         downloads to the given outfile
+  -c format, --convert format
+                        converts the stream to a given format (mp3, mp4) using ffmpeg
   -a header:value, --add-header header:value
-                        adds or overwrites an existing header based on the
-                        headers.py file
+                        adds or overwrites an existing header based on the headers.py file
   -r header, --remove-header header
-                        removes an existing header based on the headers.py
-                        file
+                        removes an existing header based on the headers.py file
   -s sec|minsec-maxsec, --sleep sec|minsec-maxsec
-                        sleeps a fixed time sec or sleeps random in
-                        [minsec;maxsec] between requests
+                        sleeps a fixed time sec or sleeps random in [minsec;maxsec] between
+                        requests
   -v, --verbose         shows progress, use -vv for maximum verbosity
   --version             show program's version number and exit
+
 ```
 
 ## Examples
