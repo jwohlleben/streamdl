@@ -7,6 +7,7 @@ streamdl downloads streams from m3u8 files
 import subprocess
 import requests
 import logging
+import ffmpeg
 import random
 import m3u8
 import time
@@ -95,29 +96,11 @@ def main_loop():
         logger.info('Converting file...')
 
         if args.convert_format == 'mp3':
-            command = [
-                'ffmpeg',
-                '-i', args.output,
-                '-vn',
-                '-ar', '44100',
-                '-ac', '2',
-                '-b:a', '192k',
-                args.output + '.mp3'
-            ]
+            ffmpeg.input(args.output).output(args.output + '.mp3', vn=None, ar=44100, ac=2, **{'b:a': '192k'}).run()
         elif args.convert_format == 'mp4':
-            command = [
-                'ffmpeg',
-                '-i', args.output,
-                '-c:v', 'libx264',
-                '-c:a', 'aac',
-                args.output + '.mp4'
-            ]
+            ffmpeg.input(args.output).output(args.output + '.mp4', vcodec='libx264', acodec='aac').run()
 
-        try:
-            subprocess.run(command)
-            logger.info('Done converting')
-        except:
-            logger.error('Could not convert file. Is ffmpeg installed?')
+        logger.info('Done converting')
 
 if __name__ == '__main__':
     try:
