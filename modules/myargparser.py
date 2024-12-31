@@ -75,7 +75,7 @@ parser.add_argument(
 parser.add_argument(
     '--version',
     action='version',
-    version='%(prog)s 1.1'
+    version='%(prog)s 2.0'
 )
 
 def parse_args(headers):

@@ -4,40 +4,50 @@
 streamdl downloads streams from m3u8 files
 """
 
+import requests
+import logging
 import random
+import m3u8
 import time
 import sys
 import os
 
+from alive_progress import alive_bar
+
+# Setup logger
+logger = logging.getLogger(__name__)
+logging.basicConfig()
+
 # Ensure, that all modules can be found
 sys.path.insert(0, os.path.dirname(__file__))
 
-import modules.mylog as log
 from modules.myargparser import parse_args
 from modules.headers import headers
-
-try:
-    import requests
-    import m3u8
-except ModuleNotFoundError as e:
-    print(f'{e}. Please install the module (e.g. using pip)')
-    sys.exit(1)
+from modules.url import is_url
 
 args = parse_args(headers)
-log.verbosity = args.verbosity
+
+# Change verbosity level based on args
+if args.verbosity == 0:
+    logger.setLevel(logging.WARNING)
+elif args.verbosity == 1:
+    logger.setLevel(logging.INFO)
+else:
+    logger.setLevel(logging.DEBUG)
+
 
 def main_loop():
     """This is the main proram"""
-    log.v('Downloading playlist...')
-    log.vv('GET', args.stream_url)
+    logger.info('Downloading playlist...')
+    logger.info(f'GET {args.stream_url}')
     try:
         response = requests.get(args.stream_url, headers=headers)
     except requests.ConnectionError:
-        log.error(f'Could not connect to {args.stream_url}')
+        logger.error(f'Could not connect to {args.stream_url}')
         sys.exit(1)
 
     if response.status_code != 200:
-        log.error('Could not get playlist')
+        logger.error('Could not get playlist')
         sys.exit(1)
 
     playlist = m3u8.loads(response.text)
@@ -46,47 +56,43 @@ def main_loop():
     # Initialize random generator
     random.seed()
 
-    log.v('Downloading segments...')
-
-    old_ts = time.time()
-    new_ts = time.time()
+    logger.info('Downloading segments...')
 
     with open(args.output, 'wb') as file:
-        for i, segment in enumerate(playlist.segments):
-            new_ts = time.time()
-            segment_url = args.base_url + segment.uri
+        with alive_bar(len(playlist.segments), calibrate=50) as bar:
+            for i, segment in enumerate(playlist.segments):
+                if is_url(segment.uri):
+                    segment_url = segment.uri
+                else:
+                    segment_url = args.base_url + segment.uri
 
-            # Print progress every 10 sec
-            if abs(new_ts - old_ts) > 10.0:
-                progress = int((i / max_segments) * 100)
-                log.v(f'Progress: {progress} %')
-                old_ts = new_ts
+                # Sleep, if specified
+                sleep_min, sleep_max = args.sleep
+                sleep_sec = random.uniform(sleep_min, sleep_max)
+                logger.debug(f'Sleep {sleep_sec:.2} sec')
+                time.sleep(sleep_sec)
 
-            # Sleep, if specified
-            sleep_min, sleep_max = args.sleep
-            sleep_sec = random.uniform(sleep_min, sleep_max)
-            log.vv(f'Sleep {sleep_sec:.2} sec')
-            time.sleep(sleep_sec)
+                logger.info(f'GET {segment_url}')
 
-            log.vv('GET', segment_url)
+                try:
+                    response = requests.get(segment_url, headers=headers)
+                except requests.ConnectionError:
+                    logger.info(f'Could not connect to {segment_url}')
+                    sys.exit(1)
 
-            try:
-                response = requests.get(segment_url, headers=headers)
-            except requests.ConnectionError:
-                log.error(f'Could not connect to {segment_url}')
-                sys.exit(1)
+                if response.status_code != 200:
+                    logger.info(f'Aborting. Could not find "{segment_url}"')
+                    sys.exit(1)
 
-            if response.status_code != 200:
-                log.error(f'Aborting. Could not find "{segment_url}"')
-                sys.exit(1)
+                file.write(response.content)
+                bar()
 
-            file.write(response.content)
+    logger.info('Done')
 
-    log.v('Done :)')
 
 if __name__ == '__main__':
     try:
         main_loop()
     except KeyboardInterrupt:
-        log.v('Bye')
+        print('Bye')
         sys.exit(0)
