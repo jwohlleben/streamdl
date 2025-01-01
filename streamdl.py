@@ -37,48 +37,100 @@ else:
     logger.setLevel(logging.DEBUG)
 
 
-def download_playlist(playlist_url, headers):
-    """Returns the downloaded playlist from a url"""
-
-    logger.info(f'GET {playlist_url}')
+def get_url(url, headers):
+    """Performs a get request and returns the response"""
+    logger.info(f'GET {url}')
 
     try:
-        response = requests.get(playlist_url, headers=headers)
+        response = requests.get(url, headers=headers)
     except requests.ConnectionError:
-        logger.error(f'Could not connect to {playlist_url}')
+        logger.info(f'Could not connect to {url}')
         sys.exit(1)
 
     if response.status_code != 200:
-        logger.error('Could not get playlist')
+        logger.info(f'Aborting. Could not find "{url}"')
         sys.exit(1)
 
-    return m3u8.loads(response.text)
+    return response
 
 
-def download_segment(segment_url, headers):
-    """Returns the downloaded segment content"""
-
-    logger.info(f'GET {segment_url}')
-
-    try:
-        response = requests.get(segment_url, headers=headers)
-    except requests.ConnectionError:
-        logger.info(f'Could not connect to {segment_url}')
-        sys.exit(1)
-
-    if response.status_code != 200:
-        logger.info(f'Aborting. Could not find "{segment_url}"')
-        sys.exit(1)
-
-    return response.content
+def choose_url(base_url, uri):
+    """Chooses the new url based on the uri"""
+    if is_url(uri):
+        return uri
+    else:
+        return base_url + uri
 
 
-def main_loop():
+class MyStream:
+    """Wrapper class for streams"""
+
+    def __init__(self, url):
+        """Initialize a new stream url"""
+        self._url = None
+        self._base = None
+        self._m3u8 = None
+        self.set_url(url)
+
+
+    @property
+    def url(self):
+        """Return stream url"""
+        return self._url
+
+
+    @property
+    def base(self):
+        """Return base url"""
+        return self._base
+
+    @property
+    def m3u8(self):
+        """Returns the stream"""
+        return self._m3u8
+
+
+    def set_url(self, url):
+        """Set a new stream url"""
+        self._url = url
+        self.__update_base_url()
+        self._m3u8 = m3u8.loads(get_url(self.url, headers).text)
+
+
+    def __update_base_url(self):
+        """Update the base url"""
+        parts = self.url.rsplit('/', 1)
+        if len(parts) != 2:
+            print('Malformed stream url')
+            sys.exit(1)
+        self._base = parts[0] + '/'
+
+
+def main():
     """This is the main program"""
 
-    logger.info('Downloading playlist...')
-    playlist = download_playlist(args.stream_url, headers)
-    max_segments = len(playlist.segments)
+    stream = MyStream(args.stream_url)
+
+    # Check for other playlists
+    while len(stream.m3u8.playlists) != 0:
+        print('There are multiple streams available. Please select one to download:')
+        for i, p in enumerate(stream.m3u8.playlists):
+            print(f'{i}: {p.stream_info}')
+
+        print()
+
+        while True:
+            choice = input('Choice: ')
+            try:
+                choice = int(choice)
+                assert choice >= 0
+                assert choice < len(stream.m3u8.playlists)
+            except:
+                print('Please enter a valid number')
+                continue
+            break
+
+        stream.set_url(choose_url(stream.base, stream.m3u8.playlists[choice].uri))
 
     # Initialize random generator
     random.seed()
@@ -86,12 +138,9 @@ def main_loop():
     logger.info('Downloading segments...')
 
     with open(args.output, 'wb') as file:
-        with alive_bar(len(playlist.segments), calibrate=50) as bar:
-            for i, segment in enumerate(playlist.segments):
-                if is_url(segment.uri):
-                    segment_url = segment.uri
-                else:
-                    segment_url = args.base_url + segment.uri
+        with alive_bar(len(stream.m3u8.segments), calibrate=50) as bar:
+            for i, segment in enumerate(stream.m3u8.segments):
+                segment_url = choose_url(stream.base, segment.uri)
 
                 # Sleep, if specified
                 sleep_min, sleep_max = args.sleep
@@ -100,7 +149,7 @@ def main_loop():
                 time.sleep(sleep_sec)
 
                 # Download segment and write to file
-                segment_content = download_segment(segment_url, headers)
+                segment_content = get_url(segment_url, headers).content
                 file.write(segment_content)
 
                 bar()
@@ -108,7 +157,8 @@ def main_loop():
     logger.info('Done downloading')
 
     # Convert file, if requested
-    if args.convert_format != '':
+    if args.convert_format != None:
+        print(args.convert_format)
         logger.info('Converting file...')
 
         if args.convert_format == 'mp3':
@@ -121,7 +171,7 @@ def main_loop():
 
 if __name__ == '__main__':
     try:
-        main_loop()
+        main()
     except KeyboardInterrupt:
         print('Bye')
         sys.exit(0)

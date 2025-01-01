@@ -18,14 +18,6 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    '-b',
-    '--base-url',
-    help='overwrites the default URL for downloading, e.g. https://somewebsite.com/epicstream/',
-    metavar='base_url',
-    dest='base_url',
-)
-
-parser.add_argument(
     '-o',
     '--output',
     default=DEFAULT_OUTFILE,
@@ -84,20 +76,12 @@ parser.add_argument(
 parser.add_argument(
     '--version',
     action='version',
-    version='%(prog)s 2.0'
+    version='%(prog)s 2.1'
 )
 
 def parse_args(headers):
     """Parses and prepares the args and headers"""
     args = parser.parse_args()
-
-    # Set base_url if no --base-url is specified
-    if args.base_url is None:
-        parts = args.stream_url.rsplit('/', 1)
-        if len(parts) != 2:
-            print('Malformed base url')
-            sys.exit(1)
-        args.base_url = parts[0] + '/'
 
     # Handle --add-headers
     for header in args.add_headers:
