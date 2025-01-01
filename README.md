@@ -25,9 +25,6 @@ positional arguments:
 
 options:
   -h, --help            show this help message and exit
-  -b base_url, --base-url base_url
-                        overwrites the default URL for downloading, e.g.
-                        https://somewebsite.com/epicstream/
   -o outfile, --output outfile
                         downloads to the given outfile
   -c format, --convert format
