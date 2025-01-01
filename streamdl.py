@@ -39,7 +39,7 @@ else:
 
 
 def main_loop():
-    """This is the main proram"""
+    """This is the main program"""
     logger.info('Downloading playlist...')
     logger.info(f'GET {args.stream_url}')
     try:
