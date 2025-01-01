@@ -4,7 +4,6 @@
 streamdl downloads streams from m3u8 files
 """
 
-import subprocess
 import requests
 import logging
 import ffmpeg
@@ -38,21 +37,47 @@ else:
     logger.setLevel(logging.DEBUG)
 
 
-def main_loop():
-    """This is the main program"""
-    logger.info('Downloading playlist...')
-    logger.info(f'GET {args.stream_url}')
+def download_playlist(playlist_url, headers):
+    """Returns the downloaded playlist from a url"""
+
+    logger.info(f'GET {playlist_url}')
+
     try:
-        response = requests.get(args.stream_url, headers=headers)
+        response = requests.get(playlist_url, headers=headers)
     except requests.ConnectionError:
-        logger.error(f'Could not connect to {args.stream_url}')
+        logger.error(f'Could not connect to {playlist_url}')
         sys.exit(1)
 
     if response.status_code != 200:
         logger.error('Could not get playlist')
         sys.exit(1)
 
-    playlist = m3u8.loads(response.text)
+    return m3u8.loads(response.text)
+
+
+def download_segment(segment_url, headers):
+    """Returns the downloaded segment content"""
+
+    logger.info(f'GET {segment_url}')
+
+    try:
+        response = requests.get(segment_url, headers=headers)
+    except requests.ConnectionError:
+        logger.info(f'Could not connect to {segment_url}')
+        sys.exit(1)
+
+    if response.status_code != 200:
+        logger.info(f'Aborting. Could not find "{segment_url}"')
+        sys.exit(1)
+
+    return response.content
+
+
+def main_loop():
+    """This is the main program"""
+
+    logger.info('Downloading playlist...')
+    playlist = download_playlist(args.stream_url, headers)
     max_segments = len(playlist.segments)
 
     # Initialize random generator
@@ -74,19 +99,10 @@ def main_loop():
                 logger.debug(f'Sleep {sleep_sec:.2} sec')
                 time.sleep(sleep_sec)
 
-                logger.info(f'GET {segment_url}')
+                # Download segment and write to file
+                segment_content = download_segment(segment_url, headers)
+                file.write(segment_content)
 
-                try:
-                    response = requests.get(segment_url, headers=headers)
-                except requests.ConnectionError:
-                    logger.info(f'Could not connect to {segment_url}')
-                    sys.exit(1)
-
-                if response.status_code != 200:
-                    logger.info(f'Aborting. Could not find "{segment_url}"')
-                    sys.exit(1)
-
-                file.write(response.content)
                 bar()
 
     logger.info('Done downloading')
@@ -101,6 +117,7 @@ def main_loop():
             ffmpeg.input(args.output).output(args.output + '.mp4', vcodec='libx264', acodec='aac').run()
 
         logger.info('Done converting')
+
 
 if __name__ == '__main__':
     try:
