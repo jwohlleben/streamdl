@@ -14,6 +14,7 @@ import sys
 import os
 
 from alive_progress import alive_bar
+from datetime import datetime
 
 # Setup logger
 logger = logging.getLogger(__name__)
@@ -183,7 +184,10 @@ def main():
         print('Entering live mode. Hit STRG + C to exit this mode...')
         print()
 
-        # Initialize timestamp
+        # Current time
+        timer_start_ts = datetime.now()
+
+        # Initialize stream timestamp
         last_ts = None
 
         while True:
@@ -195,7 +199,18 @@ def main():
                     print('Stream does not provide a timestamp. Exiting live mode')
                     break
 
-                print('Waiting for changes...')
+                if args.timer == None:
+                    print('Waiting for changes...')
+                else:
+                    timer_current_ts = datetime.now()
+                    timer_delta = (timer_current_ts - timer_start_ts).total_seconds() / 60
+
+                    if timer_delta > args.timer:
+                        print('Time is up! Stopping live mode')
+                        break
+                    else:
+                        remaining_mins = round(args.timer - timer_delta)
+                        print(f'Waiting for changes ({remaining_mins} min left)...')
 
                 # Sleep for 10 seconds before requesting the new playlist
                 time.sleep(10)

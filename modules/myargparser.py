@@ -81,6 +81,14 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    '-t',
+    '--timer',
+    help='sets a timer for stopping live mode',
+    metavar='hours:minutes',
+    dest='timer',
+)
+
+parser.add_argument(
     '-v',
     '--verbose',
     action='count',
@@ -148,5 +156,24 @@ def parse_args(headers):
             sys.exit(1)
 
         args.sleep = (sleep_min, sleep_max)
+
+    # Handle --timer
+    if args.timer != None:
+        timer_minutes = 0
+        try:
+            timer_minutes = int(args.timer)
+        except ValueError:
+            parts = args.timer.split(':')
+            if len(parts) != 2:
+                print('Malformed timer')
+                sys.exit(1)
+            try:
+                timer_minutes += int(parts[0]) * 60
+                timer_minutes += int(parts[1])
+            except ValueError:
+                print('Malformed timer')
+                sys.exit(1)
+
+        args.timer = timer_minutes
 
     return args
