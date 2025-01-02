@@ -16,7 +16,7 @@ In the streamdl folder run `./setup_venv.sh` to setup the virtual environment.
 ## Usage
 ```
 usage: streamdl.py [-h] [-f] [-l] [-o outfile] [-c format] [-H header] [-R header]
-                   [-s sec|minsec-maxsec] [-v] [--version]
+                   [-s sec|minsec-maxsec] [-t min|h:min] [-v] [--version]
                    m3u8_stream
 
 positional arguments:
@@ -38,6 +38,8 @@ options:
   -s sec|minsec-maxsec, --sleep sec|minsec-maxsec
                         sleeps a fixed time sec or sleeps random in [minsec;maxsec] between
                         requests
+  -t min|h:min, --timer min|h:min
+                        sets a timer for stopping live mode
   -v, --verbose         shows progress, use -vv for maximum verbosity
   --version             show program's version number and exit
 ```
