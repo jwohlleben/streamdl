@@ -44,17 +44,17 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    '-a',
-    '--add-header',
+    '-H',
+    '--header',
     action='append',
     default=[],
     help='adds or overwrites an existing header based on the headers.py file',
-    metavar='header:value',
+    metavar='header',
     dest='add_headers',
 )
 
 parser.add_argument(
-    '-r',
+    '-R',
     '--remove-header',
     action='append',
     default=[],
@@ -94,6 +94,10 @@ def parse_args(headers):
     # Handle --add-headers
     for header in args.add_headers:
         parts = header.split(':', 1)
+
+        # Remove leading spaces
+        parts[1] = parts[1].lstrip()
+
         if len(parts) != 2:
             print(f'Malformed header "{header}"')
             sys.exit(1)

@@ -212,6 +212,7 @@ def main():
 
 if __name__ == '__main__':
     try:
+        print()
         main()
     except KeyboardInterrupt:
         print('Bye')
