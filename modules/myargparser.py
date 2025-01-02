@@ -84,7 +84,7 @@ parser.add_argument(
     '-t',
     '--timer',
     help='sets a timer for stopping live mode',
-    metavar='hours:minutes',
+    metavar='min|h:min',
     dest='timer',
 )
 
