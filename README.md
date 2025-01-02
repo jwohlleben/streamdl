@@ -46,11 +46,14 @@ options:
 Download a stream:<br>
 `./run.sh "https://somewebsite.com/epicstream/stream.m3u8"`
 
+Download a livestream and convert it into a video:<br>
+`./run.sh -l -c mp4 "https://somewebsite.com/epicstream/stream.m3u8"`
+
 Download a stream, wait 2.5 - 4.5 seconds between requests and save the stream as "myepicstream.ts":<br>
-`./run.sh -s 2.5-4.5 -o "myepicstream.ts"`
+`./run.sh -s 2.5-4.5 -o "myepicstream.ts" "https://somewebsite.com/epicstream/stream.m3u8"`
 
 Download a stream and add a custom header:<br>
-`./run.sh -a "My-Header:Awesome" "https://somewebsite.com/epicstream/stream.m3u8"`
+`./run.sh -H "My-Header:Awesome" "https://somewebsite.com/epicstream/stream.m3u8"`
 
 ## Misc
 - You can edit the file `modules/headers.py` to use custom standard headers
