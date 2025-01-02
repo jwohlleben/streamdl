@@ -104,6 +104,7 @@ def parse_args(headers):
         parts = header.split(':', 1)
 
         # Remove leading spaces
+        parts[0] = parts[0].lstrip()
         parts[1] = parts[1].lstrip()
 
         if len(parts) != 2:
