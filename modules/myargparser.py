@@ -18,12 +18,11 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    '-o',
-    '--output',
-    default=DEFAULT_OUTFILE,
-    help='downloads to the given outfile',
-    metavar='outfile',
-    dest='output',
+    '-f',
+    '--file',
+    action='store_true',
+    help='reads a local file instead',
+    dest='local_mode',
 )
 
 parser.add_argument(
@@ -32,6 +31,15 @@ parser.add_argument(
     action='store_true',
     help='enables live mode for downloading livestreams',
     dest='live_mode',
+)
+
+parser.add_argument(
+    '-o',
+    '--output',
+    default=DEFAULT_OUTFILE,
+    help='downloads to the given outfile',
+    metavar='outfile',
+    dest='output',
 )
 
 parser.add_argument(
@@ -84,7 +92,7 @@ parser.add_argument(
 parser.add_argument(
     '--version',
     action='version',
-    version='%(prog)s 2.1'
+    version='%(prog)s 2.3'
 )
 
 def parse_args(headers):

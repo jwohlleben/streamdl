@@ -44,11 +44,11 @@ def get_url(url, headers):
     try:
         response = requests.get(url, headers=headers)
     except requests.ConnectionError:
-        logger.error(f'Could not connect to {url}')
+        print(f'Could not connect to {url}')
         sys.exit(1)
 
     if response.status_code != 200:
-        logger.error(f'Aborting. Could not find "{url}"')
+        print(f'Aborting. Could not find "{url}"')
         sys.exit(1)
 
     return response
@@ -90,13 +90,19 @@ def download_stream_segments(stream, old_ts=None):
 class MyStream:
     """Wrapper class for streams"""
 
-    def __init__(self, url):
-        """Initialize a new stream url"""
+    def __init__(self, path, is_local=False):
+        """Initialize a new stream"""
+
         self._url = None
         self._base = None
         self._m3u8 = None
-        self.set_url(url)
 
+        if is_local:
+            self._url = ''
+            self._base = ''
+            self.__init_from_file(path)
+        else:
+            self.set_url(path)
 
     @property
     def url(self):
@@ -108,6 +114,7 @@ class MyStream:
     def base(self):
         """Return base url"""
         return self._base
+
 
     @property
     def m3u8(self):
@@ -131,10 +138,20 @@ class MyStream:
         self._base = parts[0] + '/'
 
 
+    def __init_from_file(self, path):
+        """Reads the local file"""
+        try:
+            with open(path, 'r') as f:
+                self._m3u8 = m3u8.loads(f.read())
+        except:
+            print('Could not read local file')
+            sys.exit(1)
+
+
 def main():
     """This is the main program"""
 
-    stream = MyStream(args.stream_url)
+    stream = MyStream(args.stream_url, args.local_mode)
 
     # Check for other playlists
     while len(stream.m3u8.playlists) != 0:
@@ -212,7 +229,6 @@ def main():
 
 if __name__ == '__main__':
     try:
-        print()
         main()
     except KeyboardInterrupt:
         print('Bye')

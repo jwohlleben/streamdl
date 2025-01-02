@@ -15,7 +15,7 @@ In the streamdl folder run `./setup_venv.sh` to setup the virtual environment.
 
 ## Usage
 ```
-usage: streamdl.py [-h] [-o outfile] [-l] [-c format] [-H header] [-R header]
+usage: streamdl.py [-h] [-f] [-l] [-o outfile] [-c format] [-H header] [-R header]
                    [-s sec|minsec-maxsec] [-v] [--version]
                    m3u8_stream
 
@@ -25,9 +25,10 @@ positional arguments:
 
 options:
   -h, --help            show this help message and exit
+  -f, --file            reads a local file instead
+  -l, --live            enables live mode for downloading livestreams
   -o outfile, --output outfile
                         downloads to the given outfile
-  -l, --live            enables live mode for downloading livestreams
   -c format, --convert format
                         converts the stream to a given format (mp3, mp4)
   -H header, --header header
@@ -39,7 +40,6 @@ options:
                         requests
   -v, --verbose         shows progress, use -vv for maximum verbosity
   --version             show program's version number and exit
-
 ```
 
 ## Examples
