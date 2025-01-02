@@ -27,10 +27,18 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    '-l',
+    '--live',
+    action='store_true',
+    help='enables live mode for downloading livestreams',
+    dest='live_mode',
+)
+
+parser.add_argument(
     '-c',
     '--convert',
     choices=['mp3', 'mp4'],
-    help='converts the stream to a given format (mp3, mp4) using ffmpeg',
+    help='converts the stream to a given format (mp3, mp4)',
     metavar='format',
     dest='convert_format',
 )

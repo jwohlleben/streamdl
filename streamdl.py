@@ -44,11 +44,11 @@ def get_url(url, headers):
     try:
         response = requests.get(url, headers=headers)
     except requests.ConnectionError:
-        logger.info(f'Could not connect to {url}')
+        logger.error(f'Could not connect to {url}')
         sys.exit(1)
 
     if response.status_code != 200:
-        logger.info(f'Aborting. Could not find "{url}"')
+        logger.error(f'Aborting. Could not find "{url}"')
         sys.exit(1)
 
     return response
@@ -60,6 +60,31 @@ def choose_url(base_url, uri):
         return uri
     else:
         return base_url + uri
+
+
+def download_stream_segments(stream, old_ts=None):
+    """Download all stream segments or segments, that are newer than old_ts"""
+    with open(args.output, 'ab') as file:
+            with alive_bar(len(stream.m3u8.segments), calibrate=50) as bar:
+                for i, segment in enumerate(stream.m3u8.segments):
+                    # Skip old timestamps, if specified
+                    if old_ts != None and segment.program_date_time <= old_ts:
+                        bar(skipped=True)
+                        continue
+
+                    segment_url = choose_url(stream.base, segment.uri)
+
+                    # Sleep, if specified
+                    sleep_min, sleep_max = args.sleep
+                    sleep_sec = random.uniform(sleep_min, sleep_max)
+                    logger.debug(f'Sleep {sleep_sec:.2} sec')
+                    time.sleep(sleep_sec)
+
+                    # Download segment and write to file
+                    segment_content = get_url(segment_url, headers).content
+                    file.write(segment_content)
+
+                    bar()
 
 
 class MyStream:
@@ -137,22 +162,38 @@ def main():
 
     logger.info('Downloading segments...')
 
-    with open(args.output, 'wb') as file:
-        with alive_bar(len(stream.m3u8.segments), calibrate=50) as bar:
-            for i, segment in enumerate(stream.m3u8.segments):
-                segment_url = choose_url(stream.base, segment.uri)
+    if args.live_mode:
+        print('Entering live mode. Hit STRG + C to exit this mode...')
+        print()
 
-                # Sleep, if specified
-                sleep_min, sleep_max = args.sleep
-                sleep_sec = random.uniform(sleep_min, sleep_max)
-                logger.debug(f'Sleep {sleep_sec:.2} sec')
-                time.sleep(sleep_sec)
+        # Initialize timestamp
+        last_ts = None
 
-                # Download segment and write to file
-                segment_content = get_url(segment_url, headers).content
-                file.write(segment_content)
+        while True:
+            try:
+                download_stream_segments(stream, last_ts)
+                last_ts = stream.m3u8.segments[-1].program_date_time
 
-                bar()
+                if last_ts == None:
+                    print('Stream does not provide a timestamp. Exiting live mode')
+                    break
+
+                print('Waiting for changes...')
+
+                # Sleep for 10 seconds before requesting the new playlist
+                time.sleep(10)
+                stream = MyStream(stream.url)
+
+                # Remove last bar
+                print('\033[F\033[K', end='')
+                print('\033[F\033[K', end='')
+
+            except KeyboardInterrupt:
+                print('Stopped live mode')
+                break
+
+    else:
+        download_stream_segments(stream)
 
     logger.info('Done downloading')
 
