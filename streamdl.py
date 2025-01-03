@@ -63,6 +63,14 @@ def choose_url(base_url, uri):
         return base_url + uri
 
 
+def sleep(params):
+    """Sleeps for a few seconds based on the params"""
+    sleep_min, sleep_max = params
+    sleep_sec = random.uniform(sleep_min, sleep_max)
+    logger.debug(f'Sleep {sleep_sec:.2f} sec')
+    time.sleep(sleep_sec)
+
+
 def download_stream_segments(stream, old_ts=None):
     """Download all stream segments or segments, that are newer than old_ts"""
     with open(args.output, 'ab') as file:
@@ -75,11 +83,9 @@ def download_stream_segments(stream, old_ts=None):
 
                     segment_url = choose_url(stream.base, segment.uri)
 
-                    # Sleep, if specified
-                    sleep_min, sleep_max = args.sleep
-                    sleep_sec = random.uniform(sleep_min, sleep_max)
-                    logger.debug(f'Sleep {sleep_sec:.2} sec')
-                    time.sleep(sleep_sec)
+                    # Sleep, if specified in normal mode
+                    if not args.live_mode and args.sleep != (0, 0):
+                        sleep(args.sleep)
 
                     # Download segment and write to file
                     segment_content = get_url(segment_url, headers).content
@@ -212,8 +218,12 @@ def main():
                         remaining_mins = round(args.timer - timer_delta)
                         print(f'Waiting for changes ({remaining_mins} min left)...')
 
-                # Sleep for 10 seconds before requesting the new playlist
-                time.sleep(10)
+                # Sleep before requesting the new playlist
+                if args.sleep == (0, 0):
+                    sleep((4, 4))
+                else:
+                    sleep(args.sleep)
+
                 stream = MyStream(stream.url)
 
                 # Remove last bar
